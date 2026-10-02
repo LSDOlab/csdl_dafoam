@@ -387,8 +387,8 @@ def make_movie(
 ):
     """Dashboard movie of a 2D optimization, one frame per optimizer iteration, drawn from the solutions DAFoam kept.
 
-    Each frame shows the ``field`` contours and surface :math:`C_p` of that iteration's flow solution (the initial
-    distribution in grey), and the histories of CD, CL, and (with ``table``) optimality and feasibility up to that iteration.
+    Each frame shows the ``field`` contours, surface :math:`C_p` and airfoil shape of that iteration's flow solution (the
+    initial ones in grey), and the histories of CD, CL, and (with ``table``) optimality and feasibility up to that iteration.
 
     Parameters
     ----------
@@ -428,13 +428,31 @@ def make_movie(
     freestream = {k: v for k, v in kwargs.items() if k in ("p_inf", "T_inf", "speed_inf")}
     labels = {"Cp": "$C_p$", "Mach": "Mach number"}
 
-    fig = plt.figure(figsize=(13.0, 6.6), constrained_layout=True)
+    # Explicit layout (inches) so that every edge lines up: the three left panels share one width and one x range (so the x ticks
+    # align vertically), the colour bar sits flush against the contour panel, and both columns share their top and bottom edges.
+    xlim, zlim = (-0.25, 1.35), (-0.45, 0.45)
+    shape_zlim = (-0.1, 0.1)
+    fig_w, fig_h = 13.0, 8.0
+    left_x, left_w = 0.85, 6.9
+    top, bottom, gap = fig_h - 0.45, 0.7, 0.15
+    h_field = left_w * (zlim[1] - zlim[0]) / (xlim[1] - xlim[0])  # equal aspect fills the box exactly
+    h_shape = left_w * (shape_zlim[1] - shape_zlim[0]) / (xlim[1] - xlim[0])
+
+    def box(x, y, w, h):
+        return fig.add_axes([x / fig_w, y / fig_h, w / fig_w, h / fig_h])
+
+    fig = plt.figure(figsize=(fig_w, fig_h))
+    ax_field = box(left_x, top - h_field, left_w, h_field)
+    ax_shape = box(left_x, bottom, left_w, h_shape)
+    cp_bottom = bottom + h_shape + gap
+    ax_cp = box(left_x, cp_bottom, left_w, top - h_field - gap - cp_bottom)
+    cax = box(left_x + left_w + 0.15, top - h_field, 0.16, h_field)
     n_right = 3 if table is not None else 2
-    grid = fig.add_gridspec(max(n_right, 2), 2, width_ratios=[1.25, 1.0])
-    ax_field = fig.add_subplot(grid[: n_right - 1 if n_right > 2 else 1, 0])
-    ax_cp = fig.add_subplot(grid[n_right - 1 if n_right > 2 else 1 :, 0])
-    right = [fig.add_subplot(grid[r, 1]) for r in range(n_right)]
-    fig.colorbar(ScalarMappable(Normalize(vmin, vmax), cmap=kwargs.get("cmap", "turbo")), ax=ax_field, label=labels.get(field, field), shrink=0.8)
+    right_x, right_w, right_gap = 9.35, 3.5, 0.2
+    right_h = (top - bottom - (n_right - 1) * right_gap) / n_right
+    right = [box(right_x, top - (r + 1) * right_h - r * right_gap, right_w, right_h) for r in range(n_right)]
+    fig.colorbar(ScalarMappable(Normalize(vmin, vmax), cmap=kwargs.get("cmap", "turbo")), cax=cax)
+    cax.set_title(labels.get(field, field), fontsize=10)
 
     # the static curves, with a marker moved each frame
     ax_cd, ax_cl = right[0], right[1]
@@ -455,6 +473,8 @@ def make_movie(
     for ax in right:
         ax.grid(alpha=0.3, which="both")
         ax.set_xlim(iteration.min() - 1, iteration.max() + 1)
+    for ax in right[:-1]:
+        ax.tick_params(labelbottom=False)
     right[-1].set_xlabel("optimizer iteration")
 
     first = surface_distribution(read_solution(case_dir, history[picks[0]]["time"]), **freestream)
@@ -463,17 +483,31 @@ def make_movie(
         g = picks[frame]
         solution = read_solution(case_dir, history[g]["time"])
         ax_field.clear()
-        plot_field_2d(solution, field, ax=ax_field, vmin=vmin, vmax=vmax, colorbar=False, **kwargs)
+        plot_field_2d(solution, field, ax=ax_field, vmin=vmin, vmax=vmax, colorbar=False, xlim=xlim, zlim=zlim, **kwargs)
+        ax_field.set_xlabel("")
+        ax_field.tick_params(labelbottom=False)
         ax_field.set_title(f"iteration {iteration[frame]}:  CD = {cd[frame]:.1f} counts,  CL = {cl[frame]:.3f}")
         ax_cp.clear()
         ax_cp.plot(first["x"], first["cp"], "-", color="0.6", lw=1.0, label="initial")
         dist = surface_distribution(solution, **freestream)
         ax_cp.plot(dist["x"], dist["cp"], "-", color="tab:red", lw=1.6, label="current")
+        ax_cp.set_xlim(*xlim)
         ax_cp.set_ylim(1.2, -2.0)
-        ax_cp.set_xlabel("x / c")
+        ax_cp.tick_params(labelbottom=False)
         ax_cp.set_ylabel("surface $C_p$")
         ax_cp.grid(alpha=0.3)
-        ax_cp.legend(loc="lower right")
+        ax_cp.legend(loc="center right", fontsize=9)
+        ax_shape.clear()
+        ax_shape.plot(first["x"], first["z"], "-", color="0.6", lw=1.0, label="initial")
+        ax_shape.plot(dist["x"], dist["z"], "-", color="tab:red", lw=1.6, label="current")
+        ax_shape.set_xlim(*xlim)
+        ax_shape.set_ylim(*shape_zlim)
+        ax_shape.set_aspect("equal")
+        ax_shape.set_xlabel("x / c")
+        ax_shape.set_ylabel("z / c")
+        ax_shape.set_yticks([-0.1, 0.0, 0.1])
+        ax_shape.grid(alpha=0.3)
+        ax_shape.legend(loc="center right", fontsize=8)
         x = iteration[frame]
         markers[0].set_data([x], [cd[frame]])
         markers[1].set_data([x], [cl[frame]])

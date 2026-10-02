@@ -72,7 +72,7 @@ The site is published at <https://lsdolab.github.io/csdl_dafoam/> by `pages.yml`
 
 The videos live in `docs/_static/` (`optimization.mp4` for the docs, `optimization.gif` for the README, which GitHub cannot play as a video).
 To regenerate them, and the figures in `docs/images/`, run `examples/airfoil_optimization.py --maxiter 100` on a DAFoam machine (about 35 minutes) and
-copy `optimization.png`, `history.png`, `movie.gif`, `movie.mp4` from the working directory.
+copy `history.png`, `movie.gif`, `movie.mp4` from the working directory.
 
 ## Releasing
 

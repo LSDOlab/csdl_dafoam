@@ -10,15 +10,13 @@ supported as an alternative), **modOpt** with **OpenSQP** as the optimizer (PySL
 automatic differentiation, and **DAFoam** for primal and adjoint computations. It ships with a 2D NACA 0012 case, an
 analysis example, an optimization example, and a flow visualization tool.
 
-![NACA 0012 optimized for minimum drag at CL = 0.5, 100 iterations: pressure-coefficient field and surface C_p of every iteration, with the CD, CL, optimality and feasibility histories](docs/_static/optimization.gif)
+![NACA 0012 optimized for minimum drag at CL = 0.5, 100 iterations: pressure-coefficient field, surface C_p and airfoil shape of every iteration, with the CD, CL, optimality and feasibility histories](docs/_static/optimization.gif)
 
 *Minimum drag at CL = 0.5 on the bundled NACA 0012 (Mach 0.69, Euler-mode case, 4,032-cell mesh): 100 iterations of OpenSQP with
-DAFoam adjoint gradients, one frame per iteration ([MP4](docs/_static/optimization.mp4)). The strong shock at 30% chord of the initial design (the sharp jump in surface C_p) is gone and CD falls
+DAFoam adjoint gradients, one frame per iteration, with airfoil shape, surface C_p, CD, CL, optimality and feasibility ([MP4](docs/_static/optimization.mp4)). The strong shock at 30% chord of the initial design (the sharp jump in surface C_p) is gone and CD falls
 from 117 to 75.4 counts (-36%) at CL = 0.5000. Produced by `examples/airfoil_optimization.py` on 4 MPI ranks in about 35 minutes. The mesh is coarse and
 nothing constrains thickness, so read it as a demonstration of the workflow, not as a design (see [docs/status.md](docs/status.md)).
 Documentation: <https://lsdolab.github.io/csdl_dafoam/>.*
-
-![Initial and optimized design: C_p contours, surface C_p and shapes](docs/images/optimization.png)
 
 > **Status.** Run end to end on a real DAFoam v5.1.1 / OpenFOAM v2506 built from source (ARM64 Linux): flow solve, adjoint
 > (validated against finite differences), 1 and 4 MPI ranks, the optimization above, and the real-solver tests. **Not yet done:**

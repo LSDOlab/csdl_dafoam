@@ -70,7 +70,7 @@ table = viz.read_optimization_history("ASO_2DAF_rank0_outputs")      # modOpt's 
 viz.make_movie("run/case", ["movie.gif", "movie.mp4"], model.history, table=table, cl_target=0.5)
 ```
 
-Each frame shows the pressure-coefficient contours and surface C_p of that iteration (the initial distribution in grey) and the drag, lift,
+Each frame shows the pressure-coefficient contours, surface C_p and airfoil shape of that iteration (the initial ones in grey) and the drag, lift,
 optimality and feasibility histories with a marker at the current iteration. A `.gif` always works; `.mp4` needs `ffmpeg` on the PATH.
 `airfoil_optimization.py` does this for you (`--no-movie` skips it), and `viz.plot_optimization_history(table, iterations=model.history, cl_target=0.5)`
 draws the static convergence figure.

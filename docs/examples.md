@@ -78,10 +78,8 @@ mpirun -np 4 python examples/airfoil_optimization.py --adjoint-tol 1e-3    # 29%
 </video>
 ```
 
-The movie shows every optimizer iteration: pressure-coefficient contours and surface C_p (the initial distribution in grey), then
+The movie shows every optimizer iteration: pressure-coefficient contours, surface C_p and the airfoil shape (the initial ones in grey), then
 the histories of CD, CL, optimality and feasibility with a marker at the current iteration.
-
-![Initial and optimized design](images/optimization.png)
 
 The design that results is visibly thicker, more cambered, and flown at zero angle of attack: the strong suction
 peak and shock are replaced by a gently loaded, shock-free upper surface that carries the same lift.

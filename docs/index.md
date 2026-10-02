@@ -10,15 +10,13 @@ from [modOpt](https://github.com/LSDOlab/modopt) (OpenSQP by default).
 ```{raw} html
 <video controls autoplay loop muted playsinline style="width:100%;max-width:900px">
   <source src="_static/optimization.mp4" type="video/mp4">
-  <img src="_static/optimization.gif" alt="C_p field, surface C_p, CD, CL, optimality and feasibility over the 100 iterations of the optimization">
+  <img src="_static/optimization.gif" alt="C_p field, surface C_p, airfoil shape, CD, CL, optimality and feasibility over the 100 iterations of the optimization">
 </video>
 ```
 
 *A NACA 0012 optimized for minimum drag at CL = 0.5 (Euler-mode case, 4,032 cells), 100 iterations of OpenSQP with DAFoam
-adjoint gradients: the pressure field and the surface pressure coefficient of every iteration, with the drag, lift, optimality and
-feasibility histories. The strong shock at 30% chord is gone and CD falls from 117 to 75 counts (-36%). See {doc}`examples`.*
-
-![Initial and optimized design: pressure-coefficient contours, surface pressure coefficient and shapes](images/optimization.png)
+adjoint gradients: the pressure field, surface pressure coefficient and airfoil shape of every iteration, with the drag, lift,
+optimality and feasibility histories. The strong shock at 30% chord is gone and CD falls from 117 to 75 counts (-36%). See {doc}`examples`.*
 
 ## How the pieces fit
 
