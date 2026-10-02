@@ -1,0 +1,39 @@
+# Lima VM for building and running DAFoam on an Apple-silicon Mac.
+#
+#   limactl start --name=dafoam scripts/vm/lima-dafoam.yaml
+#   limactl shell dafoam
+#
+# Ubuntu 24.04 for ARM64 under Apple's Virtualization framework: the guest's instructions run directly
+# on the Mac's cores (no emulation). No host folders are mounted: copy files in with `limactl copy`
+# (see docs/install-mac.md). (Do not add a mount using {{.Dir}}: in Lima that is the *instance*
+# directory, and ../.. from it is your home directory.)
+vmType: "vz"
+arch: "aarch64"
+cpus: 12
+memory: "32GiB"
+disk: "160GiB"
+
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+
+# No host folders are shared with the VM. Files are copied in with `limactl copy`.
+mounts: []
+
+containerd:
+  system: false
+  user: false
+
+# DAFoam's documented Ubuntu prerequisites (plus python3-venv). Keep in step with scripts/vm/install_prereqs_ubuntu.sh
+# (tests/test_vm_scripts.py checks that the two package lists are identical).
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y --no-install-recommends \
+        build-essential ca-certificates cmake flex bison libfl-dev libcgal-dev libopenmpi-dev openmpi-bin \
+        libscotch-dev libreadline-dev libncurses-dev wget vim git lcov patchelf pkg-config swig gfortran \
+        libxrender1 libxml2-dev libegl1 curl python3-venv python3-dev python3-pip rsync

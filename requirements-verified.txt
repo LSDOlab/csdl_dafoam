@@ -1,0 +1,8 @@
+# The lab packages at the exact commits that were verified together on real DAFoam (2026-10-01; see docs/status.md).
+# Use instead of requirements-lab.txt when you want the verified combination rather than the latest main branches:
+#     pip install -r requirements-verified.txt
+csdl_alpha @ git+https://github.com/LSDOlab/CSDL_alpha.git@b3cee4ab8859de3e118e563de322fb81f43d698a
+modopt @ git+https://github.com/LSDOlab/modopt.git@80b1e1fe0fcf103a5f8bbe53d0479a6563e5413c
+idwarp-jax @ git+https://github.com/LSDOlab/idwarp-jax.git@23b1ed88f2641ed3fcaf69ac024f3bfc9a1f6dbd
+lsdo-geo==1.0.0
+lsdo-function-spaces==1.0.0

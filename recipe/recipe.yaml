@@ -1,0 +1,50 @@
+schema_version: 1
+
+# The csdl_dafoam package itself (pure Python). The compiled DAFoam stack it needs at run time
+# is built by the recipes in ../recipes/ and published to the same channel.
+
+context:
+  version: "0.1.0"
+
+package:
+  name: csdl_dafoam
+  version: ${{ version }}
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  script: python -m pip install . --no-deps --no-build-isolation -vv
+
+requirements:
+  host:
+    - python >=3.11
+    - pip
+    - setuptools >=61
+  run:
+    - python >=3.11
+    - numpy >=2
+    - scipy
+    - csdl_alpha
+    - dafoam ==5.1.1
+    - openmdao
+    - petsc4py 3.21.*
+    - mpi4py >=4
+
+tests:
+  - python:
+      imports:
+        - csdl_dafoam
+  - script:
+      - python -m csdl_dafoam.doctor --no-fail
+      - python -m pip check
+    requirements:
+      run:
+        - pip
+
+about:
+  homepage: https://github.com/LSDOlab/csdl_dafoam
+  license: LGPL-3.0-or-later
+  license_file: LICENSE.txt
+  summary: CSDL interface to DAFoam for gradient-based aerodynamic shape optimization.

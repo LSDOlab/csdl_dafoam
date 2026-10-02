@@ -1,0 +1,82 @@
+schema_version: 1
+
+# UNBUILT DRAFT -- see ../README.md.
+# OpenFOAM-v2506 (ESI) with DAFoam's UPstream patch, plus DAFoam's reverse-mode-AD fork
+# (OpenFOAM-AD, CoDiPack-differentiated OpenFOAM libraries), installed under
+# $CONDA_PREFIX/opt/dafoam in the same layout DAFoam's installation guide produces
+# ($DAFOAM_ROOT_PATH/OpenFOAM/{OpenFOAM-v2506,OpenFOAM-AD,sharedBins,sharedLibs}).
+# An activation script sources OpenFOAM's etc/bashrc, so `conda activate` is all a user needs.
+#
+# Expect a multi-hour build (two full OpenFOAM compilations) and ~10 GB of scratch space.
+
+context:
+  of_version: "2506"
+  ad_commit: "2e519c1d4d5ad32cb2f42b7298f9087ca243b9c3"  # tip of DAFoam/OpenFOAM-AD branch v2506-ad on 2026-01-28
+
+package:
+  name: openfoam-dafoam
+  version: "${{ of_version }}.0"
+
+source:
+  - url: https://sourceforge.net/projects/openfoam/files/v${{ of_version }}/OpenFOAM-v${{ of_version }}.tgz/download
+    file_name: OpenFOAM-v${{ of_version }}.tgz
+    sha256: 63d26f48ae7ee9a7806a0ceb339ef8a0ba485a4714d54fbfb31e78e1a4849965
+    target_directory: openfoam
+  - url: https://sourceforge.net/projects/openfoam/files/v${{ of_version }}/ThirdParty-v${{ of_version }}.tgz/download
+    file_name: ThirdParty-v${{ of_version }}.tgz
+    sha256: f36ab81ba9e94b4771e27ad1c439bfd377d2a16b2919e7d969bc755ddf9eb0cc
+    target_directory: thirdparty
+  - url: https://github.com/DAFoam/files/releases/download/v1.0.0/UPstream_OF2506_Patch.C
+    sha256: d4f221d793ed250ae02b9e4d3a0f8c5b4768e0d8dd65b7993e6ba1f20e7086e8
+    file_name: UPstream_OF2506_Patch.C
+    target_directory: patch
+  - url: https://github.com/DAFoam/OpenFOAM-AD/archive/${{ ad_commit }}.tar.gz
+    sha256: 062bc1fd80419fac0cc3c96a37704ace3c3161141f6ab1e49ea505fda5b441de
+    target_directory: openfoam-ad
+  - path: activate.sh
+    target_directory: scripts
+
+build:
+  number: 0
+  skip:
+    - win
+    - osx
+  script: build.sh
+  # OpenFOAM installs its own binaries/libraries with relative and absolute rpaths into its tree;
+  # keep conda's relinker from rewriting them.
+  dynamic_linking:
+    binary_relocation: false
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ compiler('cxx') }}
+    - make
+    - cmake
+    - flex
+    - bison
+    - patch
+  host:
+    - mpi * openmpi
+    - openmpi 4.1.*
+    - zlib
+    - readline
+    - ncurses
+    - libxml2
+  run:
+    - mpi * openmpi
+    - openmpi 4.1.*
+    - zlib
+    - readline
+    - ncurses
+    - libxml2
+    - petsc 3.21.* real*
+
+tests:
+  - script:
+      - bash -c 'source "$DAFOAM_ROOT_PATH/loadDAFoam.sh" && simpleFoam -help | head -n 5 && simpleFoamADR -help | head -n 5'
+
+about:
+  homepage: https://dafoam.github.io
+  license: GPL-3.0-only
+  summary: OpenFOAM v2506 and DAFoam's reverse-mode-AD OpenFOAM libraries in DAFoam's directory layout.

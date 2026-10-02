@@ -1,0 +1,70 @@
+name: Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  # Everything except a real DAFoam solve: the CSDL/DAFoam wiring is tested against linear fake
+  # solvers (see docs/development.md). `pytest -m dafoam` needs the conda stack and is not run here.
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.12"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-lab.txt
+          pip install -e ".[geometry,opt,test]"
+
+      - name: Show stack versions
+        run: python -m csdl_dafoam.doctor --no-fail
+
+      - name: Run tests
+        run: pytest -rs
+
+      - name: Wheel contains the bundled case
+        run: |
+          pip wheel . --no-deps -w wheelhouse
+          python - <<'PY'
+          import glob, zipfile
+          names = zipfile.ZipFile(glob.glob("wheelhouse/*.whl")[0]).namelist()
+          for needed in ("csdl_dafoam/data/geometry/naca0012_unit_span.stp",
+                         "csdl_dafoam/data/cases/naca0012/constant/polyMesh/points.gz",
+                         "csdl_dafoam/data/cases/naca0012_euler_overlay/constant/thermophysicalProperties"):
+              assert needed in names, needed
+          PY
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build docs (warnings are errors)
+        run: |
+          pip install -e ".[docs]"
+          sphinx-build -W --keep-going -b html docs docs/_build/html
+
+  recipes:
+    # Cheap static checks of the conda recipes; the real build is conda-stack.yml.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: YAML parses, shell scripts have valid syntax
+        run: |
+          pip install pyyaml
+          python -c "import glob, yaml; [yaml.safe_load(open(f)) for f in ['environment.yml', 'recipe/recipe.yaml', *glob.glob('recipes/*/recipe.yaml')]]"
+          for f in recipes/*/build.sh recipes/*/activate.sh scripts/*.sh; do bash -n "$f"; done

@@ -1,0 +1,61 @@
+schema_version: 1
+
+# UNBUILT DRAFT -- see ../README.md.
+# DAFoam's OpenFOAM libraries (original + reverse-mode AD) and its Python/Cython layer.
+# Builds against the openfoam-dafoam package, which provides OpenFOAM v2506, the AD fork, and
+# the $DAFOAM_ROOT_PATH layout DAFoam's own Allmake expects.
+
+context:
+  version: "5.1.1"
+
+package:
+  name: dafoam
+  version: ${{ version }}
+
+source:
+  url: https://github.com/mdolab/dafoam/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: 235fca28541754b8775b60575f4cb9e4192480b776b9662f38c11bba85c35639
+
+build:
+  number: 0
+  skip:
+    - win
+    - osx
+  script: build.sh
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ compiler('cxx') }}
+    - make
+    - flex
+    - bison
+  host:
+    - python 3.12.*
+    - pip
+    - setuptools
+    - numpy >=2
+    - cython >=3.0
+    - mpi * openmpi
+    - openmpi 4.1.*
+    - mpi4py >=4
+    - petsc 3.21.* real*
+    - petsc4py 3.21.*
+    - openfoam-dafoam ==2506.0
+  run:
+    - python 3.12.*
+    - numpy >=2
+    - mpi4py >=4
+    - petsc4py 3.21.*
+    - openmdao
+    - openfoam-dafoam ==2506.0
+
+tests:
+  - script:
+      - bash -c 'source "$DAFOAM_ROOT_PATH/loadDAFoam.sh" && python -c "import dafoam; print(dafoam.__file__)"'
+
+about:
+  homepage: https://github.com/mdolab/dafoam
+  license: GPL-3.0-only
+  license_file: LICENSE.md
+  summary: Discrete adjoint with OpenFOAM for gradient-based optimization.

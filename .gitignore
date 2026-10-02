@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.DS_Store
+.vscode/
+
+# Runtime products of the examples
+ASO_2DAF_*
+*_cache/
+.csdl_dafoam_cache/
+processor*/
+dRdWColoring_*/
+[0-9]*.[0-9]*/
+postProcessing/
+
+# Docs build
+docs/_build/
+docs/_autoapi/
+
+# rattler-build output
+output/

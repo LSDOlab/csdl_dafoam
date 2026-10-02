@@ -1,0 +1,39 @@
+schema_version: 1
+
+# Pure-Python MDO Lab base classes; IDWarp imports it. conda-forge does not carry it.
+
+context:
+  version: "1.9.0"
+
+package:
+  name: mdolab-baseclasses
+  version: ${{ version }}
+
+source:
+  url: https://github.com/mdolab/baseclasses/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: 3a5f7e4e95369306d47d5c53460e9cedbd61fa74cdc349a7ca78b5fe2e040943
+
+build:
+  number: 0
+  noarch: python
+  script: python -m pip install . --no-deps --no-build-isolation -vv
+
+requirements:
+  host:
+    - python >=3.11
+    - pip
+    - setuptools
+  run:
+    - python >=3.11
+    - numpy >=1.25
+    - packaging
+
+tests:
+  - python:
+      imports:
+        - baseclasses
+
+about:
+  homepage: https://github.com/mdolab/baseclasses
+  license: Apache-2.0
+  summary: Base classes used by the MDO Lab tools.

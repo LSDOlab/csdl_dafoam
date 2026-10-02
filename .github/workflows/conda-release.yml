@@ -1,0 +1,41 @@
+# Builds the csdl_dafoam conda package (recipe/recipe.yaml) and publishes it to anaconda.org under
+# the lsdolab channel, where its run dependencies (csdl_alpha and the DAFoam stack from
+# conda-stack.yml) live.
+#
+# Runs when a GitHub Release is published; can also be triggered manually to retry. Publishing is
+# tied to an explicit, visible release.
+
+name: Publish conda package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Upload the built package to Anaconda.org
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build conda package
+        uses: prefix-dev/rattler-build-action@v0.2.39
+        with:
+          recipe-path: recipe/recipe.yaml
+          build-args: -c lsdolab -c conda-forge
+          upload-artifact: false
+
+      - name: Publish to Anaconda.org (lsdolab)
+        if: github.event_name == 'release' || inputs.publish
+        env:
+          ANACONDA_API_KEY: ${{ secrets.ANACONDA_API_TOKEN || secrets.ANACONDA_API_KEY }}
+        run: |
+          for pkg in $(find output -type f \( -name "*.conda" -o -name "*.tar.bz2" \)); do
+            rattler-build upload anaconda -o lsdolab "${pkg}"
+          done

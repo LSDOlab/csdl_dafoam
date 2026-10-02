@@ -1,0 +1,59 @@
+# Builds the compiled DAFoam stack (recipes/openfoam-dafoam, recipes/dafoam) in dependency order
+# (the optional Fortran IDWarp recipes are not part of the default stack; see recipes/README.md) and, on request, publishes it to
+# the lsdolab channel on anaconda.org.
+#
+# MANUAL ONLY. The OpenFOAM recipe compiles OpenFOAM twice (original + reverse-mode AD) and takes
+# hours; a hosted runner has a 6 h limit and ~14 GB of disk, which may not be enough. If this job
+# times out, build locally (recipes/README.md) or use a larger runner. Never publish before the
+# recipes have been built and tested at least once (docs/status.md).
+
+name: Build DAFoam conda stack
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Upload the built packages to Anaconda.org (lsdolab)
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL || true
+          df -h /
+
+      - name: openfoam-dafoam
+        uses: prefix-dev/rattler-build-action@v0.2.39
+        with:
+          recipe-path: recipes/openfoam-dafoam/recipe.yaml
+          build-args: -c lsdolab -c conda-forge --output-dir output
+          upload-artifact: false
+
+      - name: dafoam
+        uses: prefix-dev/rattler-build-action@v0.2.39
+        with:
+          recipe-path: recipes/dafoam/recipe.yaml
+          build-args: -c ./output -c lsdolab -c conda-forge --output-dir output
+          upload-artifact: false
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dafoam-stack-packages
+          path: output/**/*.conda
+
+      - name: Publish to Anaconda.org (lsdolab)
+        if: inputs.publish
+        env:
+          ANACONDA_API_KEY: ${{ secrets.ANACONDA_API_TOKEN || secrets.ANACONDA_API_KEY }}
+        run: |
+          for pkg in $(find output -type f \( -name "*.conda" -o -name "*.tar.bz2" \)); do
+            rattler-build upload anaconda -o lsdolab "${pkg}"
+          done

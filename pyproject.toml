@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "csdl_dafoam"
+dynamic = ["version"]
+description = "CSDL interface to DAFoam (OpenFOAM discrete adjoint) for gradient-based aerodynamic shape optimization."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "LGPL-3.0-or-later" }
+authors = [{ name = "LSDOlab" }]
+urls = { Repository = "https://github.com/LSDOlab/csdl_dafoam" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Scientific/Engineering",
+]
+
+# What `pip install csdl_dafoam` can actually resolve. The rest of the stack is NOT on PyPI:
+#   * dafoam, idwarp, petsc4py, mpi4py  -> conda (environment.yml); DAFoam links a
+#     source-built OpenFOAM, so there are no wheels.
+#   * csdl_alpha, modopt, idwarp-jax    -> LSDOlab git / conda channel (PyPI's "modopt" is an
+#     unrelated package and must not be installed). See requirements-lab.txt.
+# None of these are import-time requirements of `import csdl_dafoam`; they are imported
+# when a DAFoam run is set up, and a missing one raises an error that links the install guide.
+dependencies = [
+    "numpy>=1.24",
+    "scipy",
+]
+
+[project.optional-dependencies]
+# Geometry parameterization (lsdo_geo FFD + B-spline projection).
+geometry = ["lsdo-geo", "lsdo-function-spaces"]
+# Optimization drivers used by the examples. modopt itself comes from git (requirements-lab.txt).
+# OpenSQP (the default) imports qpsolvers, quadprog and highspy for its QP subproblems; PySLSQP is the
+# alternative algorithm. jax runs the CSDL simulator and IDWarp-JAX.
+opt = ["pyslsqp", "jax", "qpsolvers", "quadprog", "highspy"]
+examples = ["matplotlib"]
+test = ["pytest"]
+docs = [
+    "sphinx>=7",
+    "myst-parser",
+    "sphinx_rtd_theme",
+    "sphinx-copybutton",
+    "sphinx-autoapi",
+    "numpydoc",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+csdl_dafoam = ["data/**/*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "csdl_dafoam.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# NumPy 2.0.x on Apple Accelerate raises spurious FP-flag RuntimeWarnings from matmul.
+filterwarnings = ["ignore:.*encountered in matmul:RuntimeWarning"]
+markers = [
+    "openfoam: needs an OpenFOAM (checkMesh on PATH, or the OpenFOAM.app launcher on macOS)",
+    "slow: takes several seconds (deselect with -m \"not slow\" for a quick loop)",
+    "dafoam: needs a working DAFoam/OpenFOAM install (run with `pytest -m dafoam`, under mpirun for >1 rank)",
+]
+
+[project.scripts]
+csdl-dafoam-doctor = "csdl_dafoam.doctor:main"

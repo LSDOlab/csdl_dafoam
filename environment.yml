@@ -1,0 +1,43 @@
+# conda env create -f environment.yml
+# conda activate csdl-dafoam
+#
+# Creates the PYTHON side of the environment: MPI, PETSc, the lab packages and this repository. It does NOT contain DAFoam or
+# OpenFOAM, which have no conda packages yet: build them from source with scripts/vm/install_dafoam_ubuntu.sh (docs/install-linux.md,
+# docs/install-mac.md), or use this environment for everything that does not need a flow solve (the package, geometry tools, the
+# test suite, the visualization tool).
+#
+# Planned (experimental, never built): the `lsdolab` channel packages for OpenFOAM and DAFoam from recipes/. When they exist, add
+#   - openfoam-dafoam=2506.0
+#   - dafoam=5.1.1
+#   - openmdao
+# below and put `lsdolab` first in the channels. See recipes/README.md for what is still missing from the recipes.
+name: csdl-dafoam
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12
+  - pip
+  - mpi=*=openmpi
+  - openmpi=4.1
+  - mpi4py>=4
+  - petsc=3.21=real*
+  - petsc4py=3.21
+  - numpy>=2
+  - scipy
+  - jax
+  - matplotlib-base
+  - pytest
+  - pip:
+      # not on conda: lab geometry packages (PyPI), modOpt and IDWarp-JAX (git; PyPI's "modopt" is unrelated)
+      - lsdo-geo
+      - lsdo-function-spaces
+      - csdl_alpha @ git+https://github.com/LSDOlab/CSDL_alpha.git
+      - pyslsqp
+      - qpsolvers      # OpenSQP: QP subproblems
+      - quadprog
+      - highspy
+      - modopt @ git+https://github.com/LSDOlab/modopt.git
+      - idwarp-jax @ git+https://github.com/LSDOlab/idwarp-jax.git
+      # this repository
+      - -e .

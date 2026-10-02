@@ -1,0 +1,9 @@
+# LSDOlab packages that are distributed from git (and the lsdolab conda channel), not PyPI.
+# Install these before `pip install csdl_dafoam[geometry,opt]` in a pip-only environment:
+#     pip install -r requirements-lab.txt
+# In the conda environment (environment.yml) csdl_alpha comes from the channel; modopt is
+# installed from git by the environment's pip section. idwarp-jax is LSDO Lab's JAX IDWarp (default
+# mesh warper).
+csdl_alpha @ git+https://github.com/LSDOlab/CSDL_alpha.git@main
+modopt @ git+https://github.com/LSDOlab/modopt.git
+idwarp-jax @ git+https://github.com/LSDOlab/idwarp-jax.git

@@ -1,0 +1,60 @@
+schema_version: 1
+
+# UNBUILT DRAFT -- see ../README.md.
+# IDWarp (inverse-distance volume mesh warping, with derivatives): Fortran + f2py extension
+# against PETSc and a static CGNS library, built the way DAFoam's installation guide does.
+
+context:
+  version: "2.6.4"
+  cgns_version: "4.5.0"
+
+package:
+  name: idwarp
+  version: ${{ version }}
+
+source:
+  - url: https://github.com/mdolab/idwarp/archive/refs/tags/v${{ version }}.tar.gz
+    sha256: f2dfb969331d20a40a9e9a80754ae0c720da5fd0bebefac6ddb5741910730e9d
+  - url: https://github.com/CGNS/CGNS/archive/refs/tags/v${{ cgns_version }}.tar.gz
+    sha256: c72355219318755ba0a8646a8e56ee1c138cf909c1d738d258d2774fa4b529e9
+    target_directory: cgns-src
+
+build:
+  number: 0
+  skip:
+    - win
+    - osx
+  script: build.sh
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ compiler('fortran') }}
+    - make
+    - cmake
+  host:
+    - python 3.12.*
+    - pip
+    - setuptools
+    - numpy >=2
+    - mpi * openmpi
+    - openmpi 4.1.*
+    - mpi4py >=4
+    - petsc 3.21.* real*
+    - petsc4py 3.21.*
+  run:
+    - python 3.12.*
+    - numpy >=2
+    - mpi4py >=4
+    - mdolab-baseclasses >=1.4
+
+tests:
+  - python:
+      imports:
+        - idwarp
+
+about:
+  homepage: https://github.com/mdolab/idwarp
+  license: Apache-2.0
+  license_file: LICENSE.md
+  summary: Inverse-distance volume mesh warping with derivatives (MDO Lab).
