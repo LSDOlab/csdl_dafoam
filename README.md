@@ -14,7 +14,7 @@ analysis example, an optimization example, and a flow visualization tool.
 
 *Minimum drag at CL = 0.5 on the bundled NACA 0012 (Mach 0.69, Euler-mode case, 4,032-cell mesh): 100 iterations of OpenSQP with
 DAFoam adjoint gradients, one frame per iteration, with airfoil shape, surface C_p, CD, CL, optimality and feasibility ([MP4](docs/_static/optimization.mp4)). The strong shock at 30% chord of the initial design (the sharp jump in surface C_p) is gone and CD falls
-from 117 to 75.4 counts (-36%) at CL = 0.5000. Produced by `examples/airfoil_optimization.py` on 4 MPI ranks in about 35 minutes. The mesh is coarse and
+from 117 to 75.4 counts (-36%) at CL = 0.5000. Produced by `examples/airfoil_optimization.py` on 4 MPI ranks in 37 minutes (the design stops changing after 13). The mesh is coarse and
 nothing constrains thickness, so read it as a demonstration of the workflow, not as a design (see [docs/status.md](docs/status.md)).
 Documentation: <https://lsdolab.github.io/csdl_dafoam/>.*
 
@@ -48,7 +48,7 @@ A conda install of the DAFoam stack (recipes in `recipes/`) is planned but exper
 ```bash
 mpirun -np 4 python examples/airfoil_analysis.py                      # one flow solve; CL, CD; saves analysis.png
 mpirun -np 4 python examples/airfoil_analysis.py --check-totals       # adjoint vs finite differences
-mpirun -np 4 python examples/airfoil_optimization.py --maxiter 100    # min CD at CL = 0.5 (~35 min); saves figures and movie
+mpirun -np 4 python examples/airfoil_optimization.py --maxiter 100    # min CD at CL = 0.5 (~37 min; same design by iteration 65); saves figures and movie
 mpirun -np 4 python examples/airfoil_optimization.py --case naca0012  # RANS instead of Euler mode
 mpirun -np 4 python examples/airfoil_optimization.py --optimizer PySLSQP --warper idwarp   # the alternatives
 ```

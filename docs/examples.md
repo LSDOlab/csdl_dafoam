@@ -44,7 +44,7 @@ same few lines are in {doc}`quickstart`.
 ## Optimization: `airfoil_optimization.py`
 
 ```bash
-mpirun -np 4 python examples/airfoil_optimization.py --maxiter 100    # Euler mode (default case), 100 iterations: about 35 min
+mpirun -np 4 python examples/airfoil_optimization.py --maxiter 100    # Euler mode (default case), 100 iterations: 37 min; same design by iteration 65 (13 min)
 mpirun -np 4 python examples/airfoil_optimization.py --maxiter 40     # about 7 min; still improving
 mpirun -np 4 python examples/airfoil_optimization.py --case naca0012  # the original RANS tutorial setup
 mpirun -np 4 python examples/airfoil_optimization.py --no-movie       # skip the movie (the figures are still written)
@@ -89,6 +89,25 @@ peak and shock are replaced by a gently loaded, shock-free upper surface that ca
 CL reaches its target within six iterations and stays there. Drag falls in steps and stops changing at about iteration 65 (75.42
 counts). Optimality reaches about 6e-5 but not the default 1e-5, so modOpt reports "not converged" at the iteration cap even though the
 objective no longer moves; the brief optimality spike near iteration 95 is a transient that the optimizer recovers from within two iterations.
+
+### Cost, and when to stop
+
+The 100-iteration run took **36.7 minutes** of optimizer time (4 ranks, 4,032 cells). Most of it bought nothing:
+
+| Iteration | Elapsed | CD (counts) | Function evaluations | Gradient evaluations |
+| --- | --- | --- | --- | --- |
+| 10 | 2.1 min | 86.2 | 17 | 15 |
+| 20 | 3.5 min | 81.4 | 27 | 25 |
+| 40 | 7.0 min | 76.55 | 52 | 50 |
+| 65 | 13.0 min | 75.42 | 106 | 92 |
+| 80 | 24.7 min | 75.42 | 233 | 167 |
+| 100 | 36.7 min | 75.42 | 406 | 244 |
+
+CD stops changing at iteration 65 (13 minutes); the remaining 24 minutes polish an unchanged design. Early iterations cost about 10 s each and
+the last ones about 40 s, because the line search takes many steps once the optimizer is creeping along a flat valley (iterations 80 to 100 needed
+173 function and 77 gradient evaluations). For this case `--maxiter 65` gives the same design in about a third of the time. A looser
+`--tolerance` might stop it earlier, but optimality plateaus near 6e-5, so the default 1e-5 is never met and a value such as 1e-4 would need to be
+tried before relying on it.
 
 Reading it carefully: the mesh is coarse (4,032 cells) and the Euler-mode case has no resolved boundary layer, so the absolute drag numbers
 are not physical and the optimum partly exploits the mesh ({doc}`status`). It is a demonstration of the workflow, not a design.
@@ -159,7 +178,7 @@ On an Apple M5 Max (12 cores), in the Linux VM of {doc}`install-mac`, one analys
 
 The adjoint dominates and depends on the flow state: it takes 260 GMRES iterations per output at an easy state and many more near a shock.
 Four ranks give about 3.3x over one on the 4,032-cell mesh; the 336-cell mesh is too small to gain from more ranks. The complete
-optimizations on the 4,032-cell mesh, 4 ranks: **40 iterations, 50 gradient evaluations, 430 s (7 min)**; **100 iterations, about 35 minutes** (the movie
+optimizations on the 4,032-cell mesh, 4 ranks: **40 iterations, 50 gradient evaluations, 430 s (7 min)**; **100 iterations, 36.7 minutes** (the movie
 above; later iterations cost more because the adjoint is harder near the final shape); about a second per iteration on the 336-cell mesh. Nothing here uses a GPU: DAFoam and OpenFOAM are CPU-only.
 
 ## Speeding it up
