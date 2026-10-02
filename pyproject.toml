@@ -10,7 +10,6 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "LGPL-3.0-or-later" }
 authors = [{ name = "LSDOlab" }]
-urls = { Repository = "https://github.com/LSDOlab/csdl_dafoam" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
@@ -67,6 +66,12 @@ markers = [
     "slow: takes several seconds (deselect with -m \"not slow\" for a quick loop)",
     "dafoam: needs a working DAFoam/OpenFOAM install (run with `pytest -m dafoam`, under mpirun for >1 rank)",
 ]
+
+[project.urls]
+Homepage = "https://lsdolab.github.io/csdl_dafoam/"
+Documentation = "https://lsdolab.github.io/csdl_dafoam/"
+Repository = "https://github.com/LSDOlab/csdl_dafoam"
+Issues = "https://github.com/LSDOlab/csdl_dafoam/issues"
 
 [project.scripts]
 csdl-dafoam-doctor = "csdl_dafoam.doctor:main"

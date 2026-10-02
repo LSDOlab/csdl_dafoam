@@ -1,5 +1,9 @@
 # csdl_dafoam: CSDL - DAFoam interface for aerodynamic shape optimization
 
+[![Tests](https://github.com/LSDOlab/csdl_dafoam/actions/workflows/tests.yml/badge.svg)](https://github.com/LSDOlab/csdl_dafoam/actions/workflows/tests.yml)
+
+**📖 Documentation: <https://lsdolab.github.io/csdl_dafoam/>** ([installation](https://lsdolab.github.io/csdl_dafoam/installation.html) · [examples](https://lsdolab.github.io/csdl_dafoam/examples.html) · [API reference](https://lsdolab.github.io/csdl_dafoam/api/index.html))
+
 **csdl_dafoam** is a CSDL-DAFoam interface for CFD-based aerodynamic shape optimization. It integrates
 **lsdo_geo** for geometric parameterization, **IDWarp-JAX** for mesh deformation (the Fortran IDWarp is
 supported as an alternative), **modOpt** with **OpenSQP** as the optimizer (PySLSQP selectable), **CSDL** for
